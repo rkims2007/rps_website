@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel – Rishikul Public School</title>
+  <!-- 1. Auth check — must be FIRST before any resource loads -->
+  <script>
+    if (localStorage.getItem('rps_logged_in') !== 'true') {
+      window.location.replace('admin-login.html');
+    }
+  </script>
+  <!-- Keep html bg matching so no white flash during CSS load -->
+  <style>html{background:#f1f5f9;}</style>
+  <link rel="stylesheet" href="css/poppins.css"/>
+  <link rel="stylesheet" href="css/fa.min.css"/>
+  <link rel="stylesheet" href="admin.css"/>
+</head>
+<body>
+  <!-- Cover: starts hidden by default, only shown briefly if needed -->
+  <div id="adminCover" style="display:none;"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo-wrap">
+        <div class="sb-icon" id="sbLogoIcon"><i class="fas fa-graduation-cap"></i></div>
+        <img id="sbLogoImg" alt="Logo" style="display:none;width:42px;height:42px;object-fit:contain;border-radius:10px;"/>
+      </div>
+      <div><div class="sb-name" id="sbSchoolName">Rishikul Public School</div><div class="sb-sub">Admin Panel</div></div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-label">Main</div>
+      <button class="sb-link active" data-panel="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+      <div class="sb-label">Site Identity</div>
+      <button class="sb-link" data-panel="branding"><i class="fas fa-paint-brush"></i> Branding &amp; Logo</button>
+      <div class="sb-label">Content</div>
+      <button class="sb-link" data-panel="admission"><i class="fas fa-calendar-alt"></i> Admission Year</button>
+      <button class="sb-link" data-panel="sections"><i class="fas fa-file-alt"></i> Section Content</button>
+      <button class="sb-link" data-panel="leaders"><i class="fas fa-users"></i> Leadership</button>
+      <button class="sb-link" data-panel="testimonials"><i class="fas fa-comments"></i> Testimonials</button>
+      <button class="sb-link" data-panel="gallery"><i class="fas fa-images"></i> Gallery</button>
+      <button class="sb-link" data-panel="media"><i class="fas fa-photo-video"></i> Media Manager</button>
+      <button class="sb-link" data-panel="notices"><i class="fas fa-bullhorn"></i> Notice Board</button>
+      <div class="sb-label">Settings</div>
+      <button class="sb-link" data-panel="password"><i class="fas fa-key"></i> Change Password</button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar"><i class="fas fa-user-shield"></i></div>
+        <div><div class="sb-uname" id="sbUsername">Admin</div><div class="sb-urole">Administrator</div></div>
+      </div>
+      <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+  <div class="sb-overlay" id="sbOverlay"></div>
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+        <div><div class="page-title" id="pageTitle">Dashboard</div><div class="page-sub" id="pageSub">Overview of school admin panel</div></div>
+      </div>
+      <div class="topbar-right">
+        <a href="index.html" target="_blank" class="view-site-btn"><i class="fas fa-external-link-alt"></i> View Website</a>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="panel active" id="panel-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-ic" style="background:#dbeafe;color:#1d4ed8"><i class="fas fa-calendar-check"></i></div><div class="stat-info"><p>Admission Year</p><h3 id="dashYear">2025–26</h3></div></div>
+          <div class="stat-card"><div class="stat-ic" style="background:#dcfce7;color:#16a34a"><i class="fas fa-images"></i></div><div class="stat-info"><p>Gallery Images</p><h3 id="dashImgCount">0</h3></div></div>
+          <div class="stat-card"><div class="stat-ic" style="background:#fef9c3;color:#ca8a04"><i class="fas fa-bullhorn"></i></div><div class="stat-info"><p>Active Notices</p><h3 id="dashNoticeCount">0</h3></div></div>
+          <div class="stat-card"><div class="stat-ic" style="background:#fce7f3;color:#db2777"><i class="fas fa-users"></i></div><div class="stat-info"><p>School Leaders</p><h3 id="dashLeaderCount">5</h3></div></div>
+        </div>
+        <div class="admin-card">
+          <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="switchPanel('branding')"><i class="fas fa-paint-brush"></i> Branding</button>
+            <button class="btn btn-accent" onclick="switchPanel('admission')"><i class="fas fa-calendar-alt"></i> Admission Year</button>
+            <button class="btn btn-primary" onclick="switchPanel('sections')"><i class="fas fa-file-alt"></i> Edit Sections</button>
+            <button class="btn btn-green" onclick="switchPanel('leaders')"><i class="fas fa-users"></i> Leaders</button>
+            <button class="btn btn-outline" onclick="switchPanel('testimonials')"><i class="fas fa-comments"></i> Testimonials</button>
+            <button class="btn btn-outline" onclick="switchPanel('gallery')"><i class="fas fa-images"></i> Gallery</button>
+            <button class="btn btn-outline" onclick="switchPanel('notices')"><i class="fas fa-bullhorn"></i> Notices</button>
+          </div>
+        </div>
+        <div class="admin-card">
+          <h3><i class="fas fa-info-circle"></i> Website Status</h3>
+          <table class="data-table">
+            <thead><tr><th>Item</th><th>Value</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>School Name</td><td id="infoName">Rishikul Public School</td><td><span class="badge badge-green">Live</span></td></tr>
+              <tr><td>Admission Year</td><td id="infoYear">2025–26</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>Gallery Images</td><td id="infoImgCount">0 images</td><td><span class="badge badge-blue">Managed</span></td></tr>
+              <tr><td>Active Notices</td><td id="infoNotices">0 notices</td><td><span class="badge badge-yellow">Marquee</span></td></tr>
+              <tr><td>Leaders</td><td id="infoLeaders">5 members</td><td><span class="badge badge-green">Live</span></td></tr>
+              <tr><td>Testimonials</td><td id="infoTestiCount">3 reviews</td><td><span class="badge badge-green">Live</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BRANDING -->
+      <div class="panel" id="panel-branding">
+        <div class="admin-card">
+          <h3><i class="fas fa-school"></i> School Logo</h3>
+          <div class="branding-preview-wrap">
+            <div class="logo-preview-box">
+              <div class="logo-preview-icon" id="logoPreviewIcon"><i class="fas fa-graduation-cap"></i></div>
+              <img id="logoPreviewImg" src="" alt="Logo" style="display:none;width:90px;height:90px;object-fit:contain;border-radius:12px;"/>
+            </div>
+            <div class="branding-preview-text">
+              <div class="bp-name" id="bpSchoolName">Rishikul Public School</div>
+              <div class="bp-sub" id="bpSchoolTagline">Maniyarepur, Jaunpur</div>
+            </div>
+          </div>
+          <div class="upload-zone" id="logoUploadZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Upload School Logo &mdash; <span>Click to browse</span> or drag &amp; drop<br/><small>PNG, JPG, SVG &bull; Square recommended &bull; Max 3MB</small></p>
+            <input type="file" id="logoFileInput" accept="image/*"/>
+          </div>
+          <button class="btn btn-red btn-sm" id="removeLogoBtn" style="margin-top:.75rem;"><i class="fas fa-trash"></i> Remove Logo</button>
+        </div>
+        <div class="admin-card">
+          <h3><i class="fas fa-pen"></i> School Identity</h3>
+          <div class="form-row">
+            <div class="fg"><label>School Name</label><input type="text" id="schoolNameInput" placeholder="Rishikul Public School"/><span class="hint">Updates navbar, hero, footer &amp; all headings</span></div>
+            <div class="fg"><label>Tagline / Location</label><input type="text" id="schoolTaglineInput" placeholder="Maniyarepur, Jaunpur"/></div>
+          </div>
+          <div class="fg"><label>Hero Badge Text</label><input type="text" id="heroBadgeInput" placeholder="Excellence in Education"/></div>
+          <div class="fg"><label>Hero Subtitle</label><textarea id="heroSubtitleInput" rows="2" placeholder="Hero subtitle..."></textarea></div>
+          <div class="form-row">
+            <div class="fg"><label>Phone 1</label><input type="text" id="phone1Input" placeholder="+91 94150 XXXXX"/></div>
+            <div class="fg"><label>Phone 2</label><input type="text" id="phone2Input" placeholder="+91 54520 XXXXX"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Email</label><input type="email" id="emailInput" placeholder="info@rishikulpublicschool.in"/></div>
+            <div class="fg"><label>Address</label><input type="text" id="addressInput" placeholder="Maniyarepur, Chandwak, Jaunpur..."/></div>
+          </div>
+          <div class="fg"><label>School Timings</label><input type="text" id="timingsInput" placeholder="Monday - Saturday: 7:30 AM - 1:30 PM"/></div>
+          <button class="btn btn-primary" id="saveBrandingBtn"><i class="fas fa-save"></i> Save &amp; Publish Branding</button>
+        </div>
+      </div>
+
+      <!-- ADMISSION YEAR -->
+      <div class="panel" id="panel-admission">
+        <div class="year-display">
+          <div class="year-current"><h2>Current Admission Session</h2><div class="big" id="currentYearBig">2025–26</div></div>
+          <span class="year-badge"><i class="fas fa-circle" style="color:#4ade80;font-size:.5rem;vertical-align:middle;margin-right:.4rem;"></i>Active</span>
+        </div>
+        <div class="admin-card">
+          <h3><i class="fas fa-calendar-plus"></i> Update Admission Year</h3>
+          <div class="form-row">
+            <div class="fg"><label>Year From</label><input type="number" id="yearFrom" placeholder="e.g. 2026" min="2020" max="2040"/></div>
+            <div class="fg"><label>Year To</label><input type="number" id="yearTo" placeholder="e.g. 2027" min="2020" max="2040"/></div>
+          </div>
+          <div class="fg"><label>Preview</label><input type="text" id="yearPreview" readonly placeholder="Will auto-fill" style="font-size:1.1rem;font-weight:700;color:var(--primary);"/></div>
+          <button class="btn btn-primary" id="saveYearBtn"><i class="fas fa-check-circle"></i> Save &amp; Publish Year</button>
+        </div>
+        <div class="admin-card">
+          <h3><i class="fas fa-history"></i> Year History</h3>
+          <div id="yearHistoryList"><p style="color:var(--muted);font-size:.84rem;">No history yet.</p></div>
+        </div>
+      </div>
+
+      <!-- SECTION CONTENT -->
+      <div class="panel" id="panel-sections">
+        <div class="admin-card" style="margin-bottom:0;border-radius:var(--radius) var(--radius) 0 0;padding-bottom:0;">
+          <div class="section-tabs">
+            <button class="sec-tab active" data-sec="about">About Us</button>
+            <button class="sec-tab" data-sec="principal">Principal</button>
+            <button class="sec-tab" data-sec="chairman">Chairman</button>
+            <button class="sec-tab" data-sec="features">Academics</button>
+            <button class="sec-tab" data-sec="admissionInfo">Admissions</button>
+            <button class="sec-tab" data-sec="contact">Contact</button>
+          </div>
+        </div>
+        <div class="sec-panel active admin-card" id="sec-about" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;">
+          <h3><i class="fas fa-school"></i> About Us Section</h3>
+          <div class="fg"><label>Section Tag</label><input type="text" id="aboutTag" value="About Us"/></div>
+          <div class="form-row">
+            <div class="fg"><label>Heading Line 1</label><input type="text" id="aboutH1" value="Building a Brighter"/></div>
+            <div class="fg"><label>Heading Line 2 (highlighted)</label><input type="text" id="aboutH2" value="Future Together"/></div>
+          </div>
+          <div class="fg"><label>Paragraph 1</label><textarea id="aboutP1" rows="3">Rishikul Public School is a premier educational institution in Maniyarepur, Chandwak, Jaunpur, dedicated to holistic education blending academic excellence with character development.</textarea></div>
+          <div class="fg"><label>Paragraph 2</label><textarea id="aboutP2" rows="3">Our experienced faculty, modern infrastructure, and value-based curriculum create an environment where students thrive academically, socially, and morally.</textarea></div>
+          <div class="fg"><label>Years of Excellence Badge</label><input type="text" id="aboutYears" value="15+"/></div>
+          <button class="btn btn-primary" onclick="saveSection('about')"><i class="fas fa-save"></i> Save About Section</button>
+        </div>
+        <div class="sec-panel admin-card" id="sec-principal" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;display:none;">
+          <h3><i class="fas fa-user-tie"></i> Principal's Message</h3>
+          <div class="form-row">
+            <div class="fg"><label>Principal's Name</label><input type="text" id="principalName" value="School Principal"/></div>
+            <div class="fg"><label>Message Title</label><input type="text" id="principalTitle" value="A Word from Our Principal"/></div>
+          </div>
+          <div class="fg"><label>Message / Quote</label><textarea id="principalMsg" rows="4">"At Rishikul Public School, we are committed to creating a nurturing environment where every student is encouraged to explore their potential and develop into responsible citizens."</textarea></div>
+          <div class="fg"><label>Principal's Photo</label>
+            <div class="photo-upload-row">
+              <div class="photo-thumb" id="principalPhotoThumb"><i class="fas fa-user"></i></div>
+              <div class="upload-zone" style="padding:1rem;flex:1;cursor:pointer;" onclick="document.getElementById('principalPhotoInput').click()">
+                <i class="fas fa-camera" style="font-size:1.5rem;"></i>
+                <p style="font-size:.8rem;">Upload photo &mdash; <span>Click to browse</span></p>
+                <input type="file" id="principalPhotoInput" accept="image/*"/>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSection('principal')"><i class="fas fa-save"></i> Save Principal Message</button>
+        </div>
+        <div class="sec-panel admin-card" id="sec-chairman" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;display:none;">
+          <h3><i class="fas fa-hands-helping"></i> Chairman's Message</h3>
+          <div class="form-row">
+            <div class="fg"><label>Chairman's Name</label><input type="text" id="chairmanName" value="School Chairman"/></div>
+            <div class="fg"><label>Message Title</label><input type="text" id="chairmanTitle" value="Our Vision for Excellence"/></div>
+          </div>
+          <div class="fg"><label>Message / Quote</label><textarea id="chairmanMsg" rows="4">"Our vision is to empower every student with quality education, strong values, and 21st-century skills."</textarea></div>
+          <div class="fg"><label>Chairman's Photo</label>
+            <div class="photo-upload-row">
+              <div class="photo-thumb" id="chairmanPhotoThumb"><i class="fas fa-user"></i></div>
+              <div class="upload-zone" style="padding:1rem;flex:1;cursor:pointer;" onclick="document.getElementById('chairmanPhotoInput').click()">
+                <i class="fas fa-camera" style="font-size:1.5rem;"></i>
+                <p style="font-size:.8rem;">Upload photo &mdash; <span>Click to browse</span></p>
+                <input type="file" id="chairmanPhotoInput" accept="image/*"/>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSection('chairman')"><i class="fas fa-save"></i> Save Chairman Message</button>
+        </div>
+
+        <div class="sec-panel admin-card" id="sec-features" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;display:none;">
+          <h3><i class="fas fa-star"></i> Academics &amp; Facilities</h3>
+          <div class="fg"><label>Section Heading</label><input type="text" id="featuresH" value="Why Choose Rishikul Public School?"/></div>
+          <div class="fg"><label>Section Subtitle</label><textarea id="featuresSub" rows="2">A comprehensive learning experience with state-of-the-art facilities and dedicated faculty.</textarea></div>
+          <p style="font-size:.78rem;color:var(--muted);margin-bottom:.75rem;"><i class="fas fa-info-circle"></i> Edit feature cards below.</p>
+          <div id="featureCardsEditor"></div>
+          <div style="display:flex;gap:.5rem;margin-top:.5rem;">
+            <button class="btn btn-outline btn-sm" onclick="addFeatureCard()"><i class="fas fa-plus"></i> Add Card</button>
+            <button class="btn btn-primary btn-sm" onclick="saveSection('features')"><i class="fas fa-save"></i> Save Academics</button>
+          </div>
+        </div>
+        <div class="sec-panel admin-card" id="sec-admissionInfo" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;display:none;">
+          <h3><i class="fas fa-user-graduate"></i> Admissions Section</h3>
+          <div class="form-row">
+            <div class="fg"><label>Section Heading</label><input type="text" id="admH" value="Join Our School Family"/></div>
+            <div class="fg"><label>Intro Text</label><input type="text" id="admIntro" value="We welcome students from Nursery to Class XII."/></div>
+          </div>
+          <div class="fg"><label>Step 1 Title</label><input type="text" id="admStep1T" value="Fill Application Form"/></div>
+          <div class="fg"><label>Step 1 Description</label><input type="text" id="admStep1D" value="Visit the school office or fill the enquiry form to start your admission process."/></div>
+          <div class="fg"><label>Step 2 Title</label><input type="text" id="admStep2T" value="Document Verification"/></div>
+          <div class="fg"><label>Step 2 Description</label><input type="text" id="admStep2D" value="Submit required documents: Birth certificate, previous school records, and photographs."/></div>
+          <div class="fg"><label>Step 3 Title</label><input type="text" id="admStep3T" value="Interaction / Assessment"/></div>
+          <div class="fg"><label>Step 3 Description</label><input type="text" id="admStep3D" value="A friendly interaction session for student and parents with our principal."/></div>
+          <div class="fg"><label>Step 4 Title</label><input type="text" id="admStep4T" value="Confirmation and Enrollment"/></div>
+          <div class="fg"><label>Step 4 Description</label><input type="text" id="admStep4D" value="Fee payment and issue of admission letter. Welcome to the Rishikul family!"/></div>
+          <button class="btn btn-primary" onclick="saveSection('admissionInfo')"><i class="fas fa-save"></i> Save Admissions</button>
+        </div>
+        <div class="sec-panel admin-card" id="sec-contact" style="border-radius:0 0 var(--radius) var(--radius);border-top:none;display:none;">
+          <h3><i class="fas fa-phone-alt"></i> Contact Section</h3>
+          <div class="form-row">
+            <div class="fg"><label>Address</label><input type="text" id="contactAddr" value="Maniyarepur, Chandwak, Jaunpur - 222129, Uttar Pradesh, India"/></div>
+            <div class="fg"><label>Phone 1</label><input type="text" id="contactPhone1" value="+91 94150 XXXXX"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Phone 2</label><input type="text" id="contactPhone2" value="+91 54520 XXXXX"/></div>
+            <div class="fg"><label>Email</label><input type="email" id="contactEmail" value="info@rishikulpublicschool.in"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>School Timings</label><input type="text" id="contactTimings" value="Monday - Saturday: 7:30 AM - 1:30 PM"/></div>
+            <div class="fg"><label>Office Hours</label><input type="text" id="contactOffice" value="Office: 9:00 AM - 4:00 PM"/></div>
+          </div>
+          <button class="btn btn-primary" onclick="saveSection('contact')"><i class="fas fa-save"></i> Save Contact Info</button>
+        </div>
+      </div>
+
+      <!-- LEADERSHIP -->
+      <div class="panel" id="panel-leaders">
+        <div class="admin-card">
+          <div class="sec-hd">
+            <div><h3><i class="fas fa-users"></i> Leadership Team</h3><p>Add, edit and manage school leaders shown on the website.</p></div>
+            <button class="btn btn-primary btn-sm" id="addLeaderBtn"><i class="fas fa-plus"></i> Add Leader</button>
+          </div>
+          <div class="fg" style="margin-bottom:.5rem;">
+            <label>Vision Statement</label>
+            <textarea id="visionText" rows="2">"To nurture every child into a responsible, knowledgeable, and compassionate individual who contributes meaningfully to society."</textarea>
+          </div>
+          <button class="btn btn-outline btn-sm" style="margin-bottom:1.5rem;" id="saveVisionBtn"><i class="fas fa-save"></i> Save Vision</button>
+          <!-- leaders card grid -->
+          <div id="leadersEditor"></div>
+        </div>
+
+        <!-- ADD / EDIT MODAL -->
+        <div class="leader-add-modal" id="leaderModal" style="display:none;">
+          <div class="modal-card" style="max-width:600px;">
+            <div class="modal-hd">
+              <h3 id="leaderModalTitle"><i class="fas fa-user-plus"></i> Add Leader</h3>
+              <button onclick="closeLeaderModal()" style="background:none;border:none;font-size:1.6rem;cursor:pointer;color:var(--muted);line-height:1;">&times;</button>
+            </div>
+
+            <!-- Photo preview + upload -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
+              <div id="leaderPhotoThumb" style="width:110px;height:110px;border-radius:50%;background:var(--bg);border:3px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:var(--muted);overflow:hidden;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.1);"></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem;">
+                <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('leaderPhotoFile').click()" style="gap:.4rem;">
+                  <i class="fas fa-camera"></i> Upload Photo
+                </button>
+                <span style="font-size:.73rem;color:var(--muted);">JPG / PNG / WEBP &bull; Max 2 MB</span>
+                <button type="button" class="btn btn-sm" id="leaderRemovePhotoBtn" style="color:var(--red);background:none;border:none;font-size:.75rem;padding:.2rem .5rem;display:none;">
+                  <i class="fas fa-times"></i> Remove photo
+                </button>
+              </div>
+              <input type="file" id="leaderPhotoFile" accept="image/*" style="display:none;"/>
+            </div>
+
+            <div class="form-row">
+              <div class="fg"><label>Full Name <span style="color:var(--red);">*</span></label><input type="text" id="leaderNameInput" placeholder="e.g. Bhaskar Pandey"/></div>
+              <div class="fg"><label>Role / Designation <span style="color:var(--red);">*</span></label><input type="text" id="leaderRoleInput" placeholder="e.g. Managing Director"/></div>
+            </div>
+            <div class="fg"><label>Badge Label <span style="color:var(--muted);font-weight:400;font-size:.75rem;">(short label shown on photo)</span></label><input type="text" id="leaderBadgeInput" placeholder="e.g. Managing"/></div>
+            <div class="fg">
+              <label>Quote / Message</label>
+              <textarea id="leaderMsgInput" rows="4" placeholder="Enter an inspirational quote or message from this leader…" style="resize:vertical;"></textarea>
+            </div>
+            <input type="hidden" id="leaderEditIndex" value="-1"/>
+            <div style="display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap;">
+              <button class="btn btn-primary" id="saveLeaderBtn" style="flex:1;justify-content:center;"><i class="fas fa-save"></i> Save Leader</button>
+              <button class="btn btn-outline" onclick="closeLeaderModal()" style="flex:1;justify-content:center;">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TESTIMONIALS -->
+      <div class="panel" id="panel-testimonials">
+        <div class="admin-card">
+          <div class="sec-hd">
+            <div><h3><i class="fas fa-comments"></i> Testimonials</h3><p>Manage parent and student testimonials with star ratings.</p></div>
+            <button class="btn btn-primary btn-sm" id="addTestiBtn"><i class="fas fa-plus"></i> Add Testimonial</button>
+          </div>
+          <div id="testiEditor"></div>
+        </div>
+        <div class="leader-add-modal" id="testiModal" style="display:none;">
+          <div class="modal-card">
+            <div class="modal-hd">
+              <h3 id="testiModalTitle"><i class="fas fa-comment-alt"></i> Add Testimonial</h3>
+              <button onclick="closeTestiModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">&times;</button>
+            </div>
+            <div class="photo-upload-row" style="margin-bottom:1rem;">
+              <div class="photo-thumb" id="testiPhotoThumb"><i class="fas fa-user"></i></div>
+              <div class="upload-zone" style="padding:1rem;flex:1;cursor:pointer;" onclick="document.getElementById('testiPhotoFile').click()">
+                <i class="fas fa-camera" style="font-size:1.5rem;"></i>
+                <p style="font-size:.8rem;">Upload photo &mdash; <span>Click to browse</span> &bull; Max 2MB</p>
+                <input type="file" id="testiPhotoFile" accept="image/*"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Full Name *</label><input type="text" id="testiNameInput" placeholder="e.g. Ramesh Kumar"/></div>
+              <div class="fg"><label>Label</label><input type="text" id="testiLabelInput" placeholder="e.g. Parent - Class VIII"/></div>
+            </div>
+            <div class="fg"><label>Rating</label>
+              <div id="starRating" style="display:flex;gap:.25rem;margin-top:.3rem;">
+                <i class="fas fa-star" data-v="1" style="color:#f59e0b;font-size:1.4rem;cursor:pointer;"></i>
+                <i class="fas fa-star" data-v="2" style="color:#f59e0b;font-size:1.4rem;cursor:pointer;"></i>
+                <i class="fas fa-star" data-v="3" style="color:#f59e0b;font-size:1.4rem;cursor:pointer;"></i>
+                <i class="fas fa-star" data-v="4" style="color:#f59e0b;font-size:1.4rem;cursor:pointer;"></i>
+                <i class="fas fa-star" data-v="5" style="color:#f59e0b;font-size:1.4rem;cursor:pointer;"></i>
+              </div>
+              <input type="hidden" id="testiRating" value="5"/>
+            </div>
+            <div class="fg"><label>Testimonial Text *</label><textarea id="testiTextInput" rows="3" placeholder="Write the testimonial..."></textarea></div>
+            <input type="hidden" id="testiEditIndex" value="-1"/>
+            <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+              <button class="btn btn-primary" id="saveTestiBtn"><i class="fas fa-save"></i> Save Testimonial</button>
+              <button class="btn btn-outline" onclick="closeTestiModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GALLERY -->
+      <div class="panel" id="panel-gallery">
+        <div class="admin-card">
+          <div class="sec-hd">
+            <div><h3><i class="fas fa-images"></i> Gallery Manager</h3><p>Upload images for the website gallery. Max 5MB per image. Changes publish instantly.</p></div>
+            <div style="display:flex;gap:.5rem;">
+              <button class="btn btn-red btn-sm" id="bulkDelBtn"><i class="fas fa-trash"></i> Delete Selected</button>
+              <button class="btn btn-outline btn-sm" id="selectAllBtn"><i class="fas fa-check-square"></i> Select All</button>
+            </div>
+          </div>
+          <label class="upload-zone" id="galleryDropZone">
+            <input type="file" id="galleryFileInput" accept="image/*" multiple style="display:none;"/>
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag &amp; drop images here, or <span>browse files</span></p>
+          </label>
+          <div id="galleryStatus" style="display:none;margin-top:.75rem;padding:.6rem 1rem;background:#dcfce7;border-radius:8px;color:#15803d;font-size:.82rem;font-weight:600;"><i class="fas fa-check-circle"></i> <span id="galleryStatusText">Images saved &amp; published to website.</span></div>
+          <div class="gallery-manage-grid" id="galleryManageGrid">
+            <div class="empty-gallery"><i class="fas fa-images"></i><p>No images uploaded yet.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDIA MANAGER -->
+      <div class="panel" id="panel-media">
+
+        <!-- Sub-tabs -->
+        <div class="media-tabs" id="mediaTabs">
+          <button class="media-tab active" data-mtab="video"><i class="fas fa-video"></i> Campus Video</button>
+          <button class="media-tab" data-mtab="awards"><i class="fas fa-trophy"></i> Award Winning</button>
+          <button class="media-tab" data-mtab="smartclass"><i class="fas fa-chalkboard-teacher"></i> Smart Classes</button>
+        </div>
+
+        <!-- TAB: Campus Video -->
+        <div class="media-tab-panel active" id="mtab-video">
+          <div class="admin-card">
+            <div class="sec-hd">
+              <div><h3><i class="fas fa-video"></i> Campus Video</h3><p>Paste a YouTube URL to display your campus tour video on the website.</p></div>
+              <button class="btn btn-primary btn-sm" id="saveVideoBtn"><i class="fas fa-save"></i> Save Video</button>
+            </div>
+            <div class="fg">
+              <label>YouTube Video URL <span style="color:var(--red);">*</span></label>
+              <input type="url" id="campusVideoUrl" placeholder="e.g. https://www.youtube.com/watch?v=XXXXXXXXXXX"/>
+              <span class="hint">Paste any YouTube URL — watch, shortened (youtu.be), or embed link.</span>
+            </div>
+            <div class="fg">
+              <label>Video Title <span style="color:var(--muted);font-weight:400;font-size:.75rem;">(optional)</span></label>
+              <input type="text" id="campusVideoTitle" placeholder="e.g. Rishikul Public School – Campus Tour"/>
+            </div>
+            <!-- Preview -->
+            <div id="videoPreviewWrap" style="display:none;margin-top:1rem;">
+              <label style="font-size:.79rem;font-weight:600;color:var(--text);display:block;margin-bottom:.5rem;">Preview</label>
+              <div style="position:relative;padding-bottom:56.25%;height:0;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#000;">
+                <iframe id="videoPreviewFrame" src="" frameborder="0" allowfullscreen
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+              </div>
+            </div>
+            <div id="videoPreviewEmpty" style="margin-top:1rem;padding:2.5rem;background:var(--bg);border-radius:12px;border:2px dashed var(--border);text-align:center;color:var(--muted);">
+              <i class="fas fa-film" style="font-size:2.5rem;opacity:.3;display:block;margin-bottom:.75rem;"></i>
+              <p style="font-size:.88rem;">Enter a YouTube URL above and click <strong>Save Video</strong> to preview it here.</p>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" id="previewVideoBtn"><i class="fas fa-eye"></i> Preview</button>
+              <button class="btn btn-red btn-sm" id="removeVideoBtn"><i class="fas fa-trash"></i> Remove Video</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Award Winning Images -->
+        <div class="media-tab-panel" id="mtab-awards" style="display:none;">
+          <div class="admin-card">
+            <div class="sec-hd">
+              <div><h3><i class="fas fa-trophy"></i> Award Winning Images</h3><p>Upload photos of awards, certificates and achievements. Max 5MB each.</p></div>
+              <div style="display:flex;gap:.5rem;">
+                <button class="btn btn-red btn-sm" id="awardBulkDelBtn"><i class="fas fa-trash"></i> Delete Selected</button>
+                <button class="btn btn-outline btn-sm" id="awardSelectAllBtn"><i class="fas fa-check-square"></i> Select All</button>
+              </div>
+            </div>
+            <label class="upload-zone" id="awardDropZone">
+              <input type="file" id="awardFileInput" accept="image/*" multiple style="display:none;"/>
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Drag &amp; drop award images here, or <span>browse files</span></p>
+            </label>
+            <div id="awardStatus" style="display:none;margin-top:.75rem;padding:.6rem 1rem;background:#dcfce7;border-radius:8px;color:#15803d;font-size:.82rem;font-weight:600;"><i class="fas fa-check-circle"></i> <span id="awardStatusText">Images saved &amp; published to website.</span></div>
+            <div class="gallery-manage-grid" id="awardManageGrid">
+              <div class="empty-gallery"><i class="fas fa-trophy"></i><p>No award images uploaded yet.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Smart Classes Images -->
+        <div class="media-tab-panel" id="mtab-smartclass" style="display:none;">
+          <div class="admin-card">
+            <div class="sec-hd">
+              <div><h3><i class="fas fa-chalkboard-teacher"></i> Smart Classes Images</h3><p>Upload photos of smart classrooms, digital boards and tech-enabled learning. Max 5MB each.</p></div>
+              <div style="display:flex;gap:.5rem;">
+                <button class="btn btn-red btn-sm" id="smartBulkDelBtn"><i class="fas fa-trash"></i> Delete Selected</button>
+                <button class="btn btn-outline btn-sm" id="smartSelectAllBtn"><i class="fas fa-check-square"></i> Select All</button>
+              </div>
+            </div>
+            <label class="upload-zone" id="smartDropZone">
+              <input type="file" id="smartFileInput" accept="image/*" multiple style="display:none;"/>
+              <i class="fas fa-cloud-upload-alt"></i>
+              <p>Drag &amp; drop smart class images here, or <span>browse files</span></p>
+            </label>
+            <div id="smartStatus" style="display:none;margin-top:.75rem;padding:.6rem 1rem;background:#dcfce7;border-radius:8px;color:#15803d;font-size:.82rem;font-weight:600;"><i class="fas fa-check-circle"></i> <span id="smartStatusText">Images saved &amp; published to website.</span></div>
+            <div class="gallery-manage-grid" id="smartManageGrid">
+              <div class="empty-gallery"><i class="fas fa-chalkboard-teacher"></i><p>No smart class images uploaded yet.</p></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-media -->
+
+      <!-- NOTICES -->
+      <div class="panel" id="panel-notices">
+        <div class="admin-card">
+          <div class="sec-hd">
+            <div><h3><i class="fas fa-bullhorn"></i> Notice Board</h3><p>Notices scroll as a marquee on the main website.</p></div>
+            <button class="btn btn-red btn-sm" id="clearAllNotices"><i class="fas fa-trash"></i> Clear All</button>
+          </div>
+          <div class="fg" style="margin-bottom:1rem;">
+            <label>Add New Notice</label>
+            <div style="display:flex;gap:.5rem;">
+              <input type="text" id="noticeInput" placeholder="Type notice here..." style="padding:.7rem .9rem;border:1.5px solid var(--border);border-radius:8px;font-family:'Poppins',sans-serif;font-size:.875rem;flex:1;outline:none;background:var(--bg);"/>
+              <button class="btn btn-primary" id="addNoticeBtn"><i class="fas fa-plus"></i> Add</button>
+            </div>
+          </div>
+          <div id="noticesList" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="panel" id="panel-password">
+        <div class="admin-card" style="max-width:500px;">
+          <h3><i class="fas fa-key"></i> Change Admin Credentials</h3>
+          <div class="fg"><label>New Username (optional)</label><input type="text" id="newUn" placeholder="Leave blank to keep current"/></div>
+          <div class="fg"><label>Current Password</label><input type="password" id="curPw" placeholder="Enter current password"/></div>
+          <div class="fg"><label>New Password</label><input type="password" id="newPw" placeholder="Min 6 characters"/>
+            <div class="pw-strength"><div class="pw-bar" id="pwBar"></div></div>
+            <span class="hint" id="pwHint">Enter at least 6 characters</span>
+          </div>
+          <div class="fg"><label>Confirm New Password</label><input type="password" id="conPw" placeholder="Re-enter new password"/></div>
+          <button class="btn btn-primary" id="changePwBtn"><i class="fas fa-shield-alt"></i> Update Credentials</button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+<!-- File inputs are nested inside their upload-zone labels above -->
+
+<script>
+// AUTH CHECK (head script already redirected if not logged in — this just sets username)
+(function(){
+  var u = localStorage.getItem('rps_admin_user') || 'admin';
+  document.getElementById('sbUsername').textContent = u;
+})();
+document.getElementById('logoutBtn').onclick = function(){
+  localStorage.removeItem('rps_logged_in');
+  window.location.replace('admin-login.html');
+};
+
+// TOAST
+function showToast(msg, type) {
+  var old = document.querySelector('.toast'); if (old) old.remove();
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.innerHTML = '<i class="fas fa-' + (type==='success'?'check-circle':type==='error'?'exclamation-circle':'info-circle') + '"></i> ' + msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; t.style.transition='opacity .4s'; setTimeout(function(){ t.remove(); }, 400); }, 3000);
+}
+
+// PANEL NAVIGATION
+var panelMeta = {
+  dashboard:    { title:'Dashboard',       sub:'Overview of school admin panel' },
+  branding:     { title:'Branding & Logo', sub:'Update school name, logo and identity' },
+  admission:    { title:'Admission Year',  sub:'Manage current academic session year' },
+  sections:     { title:'Section Content', sub:'Edit website section text and content' },
+  leaders:      { title:'Leadership',      sub:'Manage school leaders and their profiles' },
+  testimonials: { title:'Testimonials',    sub:'Manage parent and student reviews' },
+  gallery:      { title:'Gallery',         sub:'Upload and manage gallery images' },
+  notices:      { title:'Notice Board',    sub:'Manage scrolling notices on homepage' },
+  media:        { title:'Media Manager',   sub:'Manage campus video, award images & smart class images' },
+  password:     { title:'Change Password', sub:'Update admin login credentials' }
+};
+function switchPanel(name) {
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.sb-link').forEach(function(b){ b.classList.remove('active'); });
+  var el = document.getElementById('panel-' + name); if (el) el.classList.add('active');
+  var btn = document.querySelector('[data-panel="' + name + '"]'); if (btn) btn.classList.add('active');
+  var m = panelMeta[name] || {};
+  document.getElementById('pageTitle').textContent = m.title || name;
+  document.getElementById('pageSub').textContent = m.sub || '';
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sbOverlay').classList.remove('show');
+  }
+  // Re-render leaders every time the panel is opened
+  if (name === 'leaders' && typeof window.renderLeaders === 'function') {
+    window.renderLeaders();
+  }
+}
+document.querySelectorAll('.sb-link[data-panel]').forEach(function(btn){
+  btn.addEventListener('click', function(){ switchPanel(this.dataset.panel); });
+});
+document.getElementById('menuToggle').onclick = function(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sbOverlay').classList.toggle('show');
+};
+document.getElementById('sbOverlay').onclick = function(){
+  document.getElementById('sidebar').classList.remove('open');
+  this.classList.remove('show');
+};
+
+// SECTION TABS
+document.querySelectorAll('.sec-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    document.querySelectorAll('.sec-tab').forEach(function(t){ t.classList.remove('active'); });
+    document.querySelectorAll('.sec-panel').forEach(function(p){ p.style.display='none'; p.classList.remove('active'); });
+    this.classList.add('active');
+    var t = document.getElementById('sec-' + this.dataset.sec);
+    if (t) { t.style.display='block'; t.classList.add('active'); }
+  });
+});
+</script>
+
+<script>
+// BRANDING
+(function(){
+  var logoData = localStorage.getItem('rps_logo') || '';
+  var saved = JSON.parse(localStorage.getItem('rps_branding') || '{}');
+  var def = {
+    schoolName:'Rishikul Public School', tagline:'Maniyarepur, Jaunpur',
+    heroBadge:'Excellence in Education',
+    heroSubtitle:"Empowering young minds with knowledge, values, and vision.",
+    phone1:'+91 94150 XXXXX', phone2:'+91 54520 XXXXX',
+    email:'info@rishikulpublicschool.in',
+    address:'Maniyarepur, Chandwak, Jaunpur – 222129',
+    timings:'Monday – Saturday: 7:30 AM – 1:30 PM'
+  };
+  var d = Object.assign({}, def, saved);
+
+  function fillForm(d) {
+    var map = {schoolNameInput:'schoolName',schoolTaglineInput:'tagline',heroBadgeInput:'heroBadge',
+      heroSubtitleInput:'heroSubtitle',phone1Input:'phone1',phone2Input:'phone2',
+      emailInput:'email',addressInput:'address',timingsInput:'timings'};
+    Object.keys(map).forEach(function(id){ var el=document.getElementById(id); if(el) el.value=d[map[id]]||''; });
+    document.getElementById('bpSchoolName').textContent = d.schoolName;
+    document.getElementById('bpSchoolTagline').textContent = d.tagline;
+    document.getElementById('sbSchoolName').textContent = d.schoolName;
+    document.getElementById('infoName').textContent = d.schoolName;
+    // Sync contact section defaults
+    var ca=document.getElementById('contactAddr'); if(ca&&!ca.value) ca.value=d.address;
+    var cp1=document.getElementById('contactPhone1'); if(cp1&&!cp1.value) cp1.value=d.phone1;
+    var cp2=document.getElementById('contactPhone2'); if(cp2&&!cp2.value) cp2.value=d.phone2;
+    var ce=document.getElementById('contactEmail'); if(ce&&!ce.value) ce.value=d.email;
+    var ct=document.getElementById('contactTimings'); if(ct&&!ct.value) ct.value=d.timings;
+  }
+  fillForm(d);
+
+  function applyLogoUI(data) {
+    var icon=document.getElementById('logoPreviewIcon'), img=document.getElementById('logoPreviewImg');
+    var sbIcon=document.getElementById('sbLogoIcon'), sbImg=document.getElementById('sbLogoImg');
+    if (data) {
+      if(icon) icon.style.display='none'; if(img){img.src=data;img.style.display='block';}
+      if(sbIcon) sbIcon.style.display='none'; if(sbImg){sbImg.src=data;sbImg.style.display='block';}
+    } else {
+      if(icon) icon.style.display='flex'; if(img) img.style.display='none';
+      if(sbIcon) sbIcon.style.display='flex'; if(sbImg) sbImg.style.display='none';
+    }
+  }
+  applyLogoUI(logoData);
+
+  ['schoolNameInput','schoolTaglineInput'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('input', function(){
+      document.getElementById('bpSchoolName').textContent=document.getElementById('schoolNameInput').value||'School Name';
+      document.getElementById('bpSchoolTagline').textContent=document.getElementById('schoolTaglineInput').value;
+    });
+  });
+
+  var zone=document.getElementById('logoUploadZone'), inp=document.getElementById('logoFileInput');
+  zone.addEventListener('click', function(){ inp.click(); });
+  zone.addEventListener('dragover', function(e){e.preventDefault();this.classList.add('drag');});
+  zone.addEventListener('dragleave', function(){this.classList.remove('drag');});
+  zone.addEventListener('drop', function(e){
+    e.preventDefault(); this.classList.remove('drag');
+    var f=e.dataTransfer.files[0]; if(f) processLogo(f);
+  });
+  inp.addEventListener('change', function(){ if(this.files[0]) processLogo(this.files[0]); });
+
+  function processLogo(file) {
+    if(file.size>3*1024*1024){showToast('Logo too large (max 3MB).','error');return;}
+    var r=new FileReader(); r.onload=function(e){logoData=e.target.result;applyLogoUI(logoData);}; r.readAsDataURL(file);
+  }
+  document.getElementById('removeLogoBtn').onclick=function(){
+    logoData=''; document.getElementById('logoFileInput').value=''; applyLogoUI(''); showToast('Logo removed.','info');
+  };
+
+  document.getElementById('saveBrandingBtn').onclick=function(){
+    var nd={
+      schoolName:document.getElementById('schoolNameInput').value.trim(),
+      tagline:document.getElementById('schoolTaglineInput').value.trim(),
+      heroBadge:document.getElementById('heroBadgeInput').value.trim(),
+      heroSubtitle:document.getElementById('heroSubtitleInput').value.trim(),
+      phone1:document.getElementById('phone1Input').value.trim(),
+      phone2:document.getElementById('phone2Input').value.trim(),
+      email:document.getElementById('emailInput').value.trim(),
+      address:document.getElementById('addressInput').value.trim(),
+      timings:document.getElementById('timingsInput').value.trim()
+    };
+    localStorage.setItem('rps_branding', JSON.stringify(nd));
+    localStorage.setItem('rps_school_name', nd.schoolName);
+    if(logoData) localStorage.setItem('rps_logo', logoData); else localStorage.removeItem('rps_logo');
+    document.getElementById('sbSchoolName').textContent = nd.schoolName || 'Rishikul Public School';
+    document.getElementById('infoName').textContent = nd.schoolName;
+    showToast('Branding saved & published!', 'success');
+  };
+})();
+</script>
+
+<script>
+// ADMISSION YEAR
+(function(){
+  var history = JSON.parse(localStorage.getItem('rps_year_history') || '[]');
+  var saved = localStorage.getItem('rps_admission_year') || '2025–26';
+  function setYearDisplays(y){
+    ['currentYearBig','dashYear','infoYear'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=y;
+    });
+  }
+  setYearDisplays(saved);
+
+  function updatePreview(){
+    var f=document.getElementById('yearFrom').value.trim();
+    var t=document.getElementById('yearTo').value.trim();
+    document.getElementById('yearPreview').value = (f&&t) ? f+'–'+t : (f ? f+'–'+(parseInt(f)+1) : '');
+  }
+  document.getElementById('yearFrom').addEventListener('input', function(){
+    var v=parseInt(this.value); if(!isNaN(v)) document.getElementById('yearTo').value=v+1;
+    updatePreview();
+  });
+  document.getElementById('yearTo').addEventListener('input', updatePreview);
+
+  function renderHistory(){
+    var el=document.getElementById('yearHistoryList');
+    if(!history.length){el.innerHTML='<p style="color:var(--muted);font-size:.84rem;">No history yet.</p>';return;}
+    el.innerHTML='<table class="data-table"><thead><tr><th>#</th><th>Year</th><th>Set On</th><th>Action</th></tr></thead><tbody>'
+      +history.slice().reverse().map(function(h,i){
+        return '<tr><td>'+(history.length-i)+'</td><td><strong>'+h.year+'</strong></td><td>'+h.date+'</td>'
+          +'<td><button class="btn btn-outline btn-sm" onclick="restoreYear(\''+h.year+'\')"><i class="fas fa-undo"></i> Restore</button></td></tr>';
+      }).join('')+'</tbody></table>';
+  }
+  window.restoreYear = function(y){
+    localStorage.setItem('rps_admission_year', y);
+    setYearDisplays(y);
+    showToast('Restored to '+y, 'success');
+  };
+
+  document.getElementById('saveYearBtn').onclick = function(){
+    var y=document.getElementById('yearPreview').value.trim();
+    if(!y){showToast('Enter both year fields.','error');return;}
+    history.push({year:y, date:new Date().toLocaleDateString('en-IN')});
+    localStorage.setItem('rps_year_history', JSON.stringify(history));
+    localStorage.setItem('rps_admission_year', y);
+    setYearDisplays(y);
+    renderHistory();
+    showToast('Admission year published: '+y, 'success');
+  };
+  renderHistory();
+})();
+</script>
+
+<script>
+// SECTION CONTENT
+(function(){
+  var defFC=[
+    {icon:'fa-laptop',title:'Smart Classrooms',desc:'Digital learning with projectors and boards.',gradient:'linear-gradient(135deg,#667eea,#764ba2)'},
+    {icon:'fa-flask',title:'Science Labs',desc:'Well-equipped Physics, Chemistry and Biology labs.',gradient:'linear-gradient(135deg,#f093fb,#f5576c)'},
+    {icon:'fa-running',title:'Sports & Fitness',desc:'Grounds for cricket, football, kabaddi and indoor games.',gradient:'linear-gradient(135deg,#4facfe,#00f2fe)'},
+    {icon:'fa-book',title:'Rich Library',desc:'A vast collection of books and digital resources.',gradient:'linear-gradient(135deg,#43e97b,#38f9d7)'},
+    {icon:'fa-music',title:'Arts & Culture',desc:'Music, dance, painting and cultural programs.',gradient:'linear-gradient(135deg,#fa709a,#fee140)'},
+    {icon:'fa-bus',title:'Transport',desc:'Safe school bus service for students of Jaunpur.',gradient:'linear-gradient(135deg,#a18cd1,#fbc2eb)'},
+    {icon:'fa-heartbeat',title:'Medical Care',desc:'On-campus first-aid and regular health check-ups.',gradient:'linear-gradient(135deg,#ffecd2,#fcb69f)'},
+    {icon:'fa-pray',title:'Value Education',desc:'Moral and ethical education in curriculum.',gradient:'linear-gradient(135deg,#a1c4fd,#c2e9fb)'}
+  ];
+  var featureCards=JSON.parse(localStorage.getItem('rps_features')||'null')||defFC;
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function renderFC(){
+    document.getElementById('featureCardsEditor').innerHTML=featureCards.map(function(fc,i){
+      return '<div class="feature-edit-card"><div class="fc-drag-handle"><i class="fas fa-grip-vertical"></i></div><div class="fc-body">'
+        +'<div class="form-row" style="margin-bottom:.4rem;">'
+        +'<div class="fg" style="margin-bottom:.3rem;"><label style="font-size:.72rem;">Title</label><input type="text" value="'+esc(fc.title)+'" oninput="featureCards['+i+'].title=this.value"/></div>'
+        +'<div class="fg" style="margin-bottom:.3rem;"><label style="font-size:.72rem;">Icon (FA)</label><input type="text" value="'+esc(fc.icon)+'" oninput="featureCards['+i+'].icon=this.value"/></div></div>'
+        +'<div class="fg" style="margin-bottom:.3rem;"><label style="font-size:.72rem;">Description</label><input type="text" value="'+esc(fc.desc)+'" oninput="featureCards['+i+'].desc=this.value"/></div>'
+        +'<div class="fg" style="margin-bottom:0;"><label style="font-size:.72rem;">Gradient</label><input type="text" value="'+esc(fc.gradient)+'" oninput="featureCards['+i+'].gradient=this.value"/></div>'
+        +'</div><button class="btn btn-red btn-sm" onclick="removeFC('+i+')"><i class="fas fa-trash"></i></button></div>';
+    }).join('');
+  }
+  window.addFeatureCard=function(){featureCards.push({icon:'fa-star',title:'New Feature',desc:'Description.',gradient:'linear-gradient(135deg,#667eea,#764ba2)'});renderFC();};
+  window.removeFC=function(i){featureCards.splice(i,1);renderFC();};
+  renderFC();
+
+  var sd=JSON.parse(localStorage.getItem('rps_sections')||'{}');
+  var sm=JSON.parse(localStorage.getItem('rps_branding')||'{}');
+  function sv(id,val){if(val!=null){var el=document.getElementById(id);if(el)el.value=val;}}
+  sv('aboutTag',sd.aboutTag);sv('aboutH1',sd.aboutH1);sv('aboutH2',sd.aboutH2);
+  sv('aboutP1',sd.aboutP1);sv('aboutP2',sd.aboutP2);sv('aboutYears',sd.aboutYears);
+  sv('principalName',sd.principalName);sv('principalTitle',sd.principalTitle);sv('principalMsg',sd.principalMsg);
+  sv('chairmanName',sd.chairmanName);sv('chairmanTitle',sd.chairmanTitle);sv('chairmanMsg',sd.chairmanMsg);
+  sv('featuresH',sd.featuresH);sv('featuresSub',sd.featuresSub);
+  sv('admH',sd.admH);sv('admIntro',sd.admIntro);
+  sv('admStep1T',sd.admStep1T);sv('admStep1D',sd.admStep1D);
+  sv('admStep2T',sd.admStep2T);sv('admStep2D',sd.admStep2D);
+  sv('admStep3T',sd.admStep3T);sv('admStep3D',sd.admStep3D);
+  sv('admStep4T',sd.admStep4T);sv('admStep4D',sd.admStep4D);
+  sv('contactAddr',sd.contactAddr||sm.address);
+  sv('contactPhone1',sd.contactPhone1||sm.phone1);
+  sv('contactPhone2',sd.contactPhone2||sm.phone2);
+  sv('contactEmail',sd.contactEmail||sm.email);
+  sv('contactTimings',sd.contactTimings||sm.timings);
+  sv('contactOffice',sd.contactOffice);
+
+  function setThumb(tid,data){if(!data)return;var el=document.getElementById(tid);el.innerHTML='';var img=document.createElement('img');img.src=data;img.style='width:100%;height:100%;object-fit:cover;border-radius:50%;';el.appendChild(img);el.dataset.photo=data;}
+  setThumb('principalPhotoThumb',sd.principalPhoto);
+  setThumb('chairmanPhotoThumb',sd.chairmanPhoto);
+  function setupPhoto(iid,tid){
+    document.getElementById(iid).addEventListener('change',function(){
+      var f=this.files[0];if(!f)return;
+      if(f.size>2097152){showToast('Max 2MB.','error');return;}
+      var r=new FileReader();r.onload=function(e){setThumb(tid,e.target.result);document.getElementById(tid).dataset.photo=e.target.result;};r.readAsDataURL(f);
+    });
+  }
+  setupPhoto('principalPhotoInput','principalPhotoThumb');
+  setupPhoto('chairmanPhotoInput','chairmanPhotoThumb');
+
+  function gv(id){var el=document.getElementById(id);return el?el.value:'';}
+  window.saveSection=function(sec){
+    var d=JSON.parse(localStorage.getItem('rps_sections')||'{}');
+    if(sec==='about'){d.aboutTag=gv('aboutTag');d.aboutH1=gv('aboutH1');d.aboutH2=gv('aboutH2');d.aboutP1=gv('aboutP1');d.aboutP2=gv('aboutP2');d.aboutYears=gv('aboutYears');}
+    else if(sec==='principal'){d.principalName=gv('principalName');d.principalTitle=gv('principalTitle');d.principalMsg=gv('principalMsg');var pt=document.getElementById('principalPhotoThumb');if(pt&&pt.dataset.photo)d.principalPhoto=pt.dataset.photo;}
+    else if(sec==='chairman'){d.chairmanName=gv('chairmanName');d.chairmanTitle=gv('chairmanTitle');d.chairmanMsg=gv('chairmanMsg');var ch=document.getElementById('chairmanPhotoThumb');if(ch&&ch.dataset.photo)d.chairmanPhoto=ch.dataset.photo;}
+    else if(sec==='features'){d.featuresH=gv('featuresH');d.featuresSub=gv('featuresSub');localStorage.setItem('rps_features',JSON.stringify(featureCards));}
+    else if(sec==='admissionInfo'){d.admH=gv('admH');d.admIntro=gv('admIntro');d.admStep1T=gv('admStep1T');d.admStep1D=gv('admStep1D');d.admStep2T=gv('admStep2T');d.admStep2D=gv('admStep2D');d.admStep3T=gv('admStep3T');d.admStep3D=gv('admStep3D');d.admStep4T=gv('admStep4T');d.admStep4D=gv('admStep4D');}
+    else if(sec==='contact'){d.contactAddr=gv('contactAddr');d.contactPhone1=gv('contactPhone1');d.contactPhone2=gv('contactPhone2');d.contactEmail=gv('contactEmail');d.contactTimings=gv('contactTimings');d.contactOffice=gv('contactOffice');}
+    localStorage.setItem('rps_sections',JSON.stringify(d));
+    showToast('Section saved & published!','success');
+  };
+})();
+</script>
+
+<script>
+// LEADERSHIP
+(function(){
+  var defLeaders=[
+    {name:'Bhaskar Pandey',role:'Managing Director',badge:'Managing',msg:'"Our mission is to build an institution where every child feels valued, inspired, and empowered to reach their fullest potential."',photo:''},
+    {name:'Yogendra Dubey',role:'Education Director',badge:'Education Director',msg:'"Quality education is the foundation of a nation\'s progress. We are dedicated to delivering the highest academic standards."',photo:''},
+    {name:'Reeta Yadav',role:'Principal',badge:'Principal',msg:'"I believe every student is unique. Our goal is to discover that uniqueness and guide each child on their journey to success."',photo:''},
+    {name:'Madhu Singh',role:'Vice Principal',badge:'Vice Principal',msg:'"Discipline, dedication, and determination shape the character of every Rishikul student."',photo:''},
+    {name:'Ruchi Singh',role:'Sub Vice Principal',badge:'Sub Vice Principal',msg:'"We nurture a safe and inclusive environment where every student can learn, grow, and shine."',photo:''}
+  ];
+  var leaders=JSON.parse(localStorage.getItem('rps_leaders')||'null')||defLeaders;
+  var curLeaderPhoto='';
+
+  var vs=localStorage.getItem('rps_vision');
+  if(vs) document.getElementById('visionText').value=vs;
+  document.getElementById('saveVisionBtn').onclick=function(){localStorage.setItem('rps_vision',document.getElementById('visionText').value);showToast('Vision saved!','success');};
+
+  function saveLeaders(){
+    localStorage.setItem('rps_leaders',JSON.stringify(leaders));
+    document.getElementById('dashLeaderCount').textContent=leaders.length;
+    document.getElementById('infoLeaders').textContent=leaders.length+' member'+(leaders.length!==1?'s':'');
+  }
+  function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function msgPreview(s){var t=String(s||'');return t.length>90?t.slice(0,90)+'...':t;}
+  window.renderLeaders = function renderLeaders(){
+    var el=document.getElementById('leadersEditor');
+    if(!leaders.length){
+      el.innerHTML='<div style="text-align:center;padding:3rem 1rem;color:var(--muted);">'
+        +'<i class="fas fa-users" style="font-size:3rem;opacity:.25;display:block;margin-bottom:1rem;"></i>'
+        +'<p style="font-size:.95rem;">No leaders added yet.</p>'
+        +'<p style="font-size:.8rem;margin-top:.3rem;">Click <strong>Add Leader</strong> to get started.</p></div>';
+      saveLeaders();return;
+    }
+    el.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;margin-top:.25rem;">'
+      +leaders.map(function(l,i){
+        var photoHTML=l.photo
+          ?'<img src="'+esc(l.photo)+'" alt="'+esc(l.name)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"/>'
+          :'<i class="fas fa-user-tie" style="font-size:2.2rem;color:rgba(255,255,255,.45);"></i>';
+        var msg=msgPreview(l.msg);
+        return '<div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;">'
+          +'<div style="background:linear-gradient(135deg,var(--primary),#2d5a9e);padding:1.5rem 1rem 2.5rem;display:flex;flex-direction:column;align-items:center;gap:.6rem;position:relative;">'
+          +'<div style="width:88px;height:88px;border-radius:50%;border:3px solid rgba(255,255,255,.35);overflow:hidden;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.25);">'+photoHTML+'</div>'
+          +'<div style="text-align:center;"><div style="font-size:1rem;font-weight:700;color:#fff;line-height:1.3;">'+esc(l.name)+'</div>'
+          +'<div style="font-size:.76rem;color:rgba(255,255,255,.75);margin-top:.2rem;">'+esc(l.role)+'</div></div>'
+          +(l.badge?'<span style="position:absolute;bottom:-11px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:.22rem .85rem;background:var(--accent);color:#0f2340;font-size:.68rem;font-weight:700;border-radius:20px;letter-spacing:.4px;box-shadow:0 2px 8px rgba(0,0,0,.15);">'+esc(l.badge)+'</span>':'')
+          +'</div>'
+          +'<div style="padding:1.5rem 1.1rem 1rem;flex:1;display:flex;flex-direction:column;gap:.75rem;">'
+          +(msg?'<p style="font-size:.81rem;color:var(--muted);line-height:1.7;font-style:italic;flex:1;"><i class="fas fa-quote-left" style="color:var(--accent);font-size:.8rem;margin-right:.3rem;opacity:.7;"></i>'+esc(msg)+'</p>'
+              :'<p style="font-size:.8rem;color:#cbd5e0;font-style:italic;flex:1;">No message added.</p>')
+          +'<div style="display:flex;gap:.5rem;padding-top:.5rem;border-top:1px solid var(--border);">'
+          +'<button class="btn btn-outline btn-sm" onclick="openLeaderModal('+i+')" style="flex:1;justify-content:center;gap:.35rem;"><i class="fas fa-edit"></i> Edit</button>'
+          +'<button class="btn btn-red btn-sm" onclick="deleteLeader('+i+')" title="Delete"><i class="fas fa-trash"></i></button>'
+          +'</div></div></div>';
+      }).join('')+'</div>';
+    saveLeaders();
+  }
+  function setThumb(src){
+    var th=document.getElementById('leaderPhotoThumb');
+    th.innerHTML='';
+    if(src){
+      var img=document.createElement('img');
+      img.src=src;img.style='width:100%;height:100%;object-fit:cover;border-radius:50%;';
+      th.appendChild(img);
+      document.getElementById('leaderRemovePhotoBtn').style.display='inline-flex';
+    } else {
+      th.innerHTML='<i class="fas fa-user-tie"></i>';
+      document.getElementById('leaderRemovePhotoBtn').style.display='none';
+    }
+  }
+  window.openLeaderModal=function(idx){
+    var isNew=(idx===-1);
+    document.getElementById('leaderModalTitle').innerHTML='<i class="fas fa-'+(isNew?'user-plus':'pen')+'"></i> '+(isNew?'Add New Leader':'Edit Leader');
+    document.getElementById('leaderEditIndex').value=idx;
+    curLeaderPhoto='';
+    document.getElementById('leaderPhotoFile').value='';
+    document.getElementById('leaderNameInput').value  = isNew?'':(leaders[idx].name||'');
+    document.getElementById('leaderRoleInput').value  = isNew?'':(leaders[idx].role||'');
+    document.getElementById('leaderBadgeInput').value = isNew?'':(leaders[idx].badge||'');
+    document.getElementById('leaderMsgInput').value   = isNew?'':(leaders[idx].msg||'');
+    if(!isNew&&leaders[idx].photo){ curLeaderPhoto=leaders[idx].photo; setThumb(curLeaderPhoto); }
+    else setThumb('');
+    document.getElementById('leaderModal').style.display='flex';
+  };
+  window.closeLeaderModal=function(){document.getElementById('leaderModal').style.display='none';};
+  document.getElementById('leaderRemovePhotoBtn').addEventListener('click',function(){
+    curLeaderPhoto=''; setThumb('');
+    document.getElementById('leaderPhotoFile').value='';
+  });
+  document.getElementById('leaderPhotoFile').addEventListener('change',function(){
+    var f=this.files[0]; if(!f) return;
+    if(f.size>2097152){showToast('Photo must be under 2 MB.','error');return;}
+    var r=new FileReader();
+    r.onload=function(e){ curLeaderPhoto=e.target.result; setThumb(curLeaderPhoto); };
+    r.readAsDataURL(f);
+  });
+  document.getElementById('saveLeaderBtn').onclick=function(){
+    var idx  = parseInt(document.getElementById('leaderEditIndex').value);
+    var name = document.getElementById('leaderNameInput').value.trim();
+    var role = document.getElementById('leaderRoleInput').value.trim();
+    if(!name){showToast('Full name is required.','error');document.getElementById('leaderNameInput').focus();return;}
+    if(!role){showToast('Role is required.','error');document.getElementById('leaderRoleInput').focus();return;}
+    var obj={
+      name : name,
+      role : role,
+      badge: document.getElementById('leaderBadgeInput').value.trim()||role,
+      msg  : document.getElementById('leaderMsgInput').value.trim(),
+      photo: curLeaderPhoto
+    };
+    if(idx===-1) leaders.push(obj); else leaders[idx]=obj;
+    window.renderLeaders(); closeLeaderModal();
+    showToast(idx===-1?'Leader added!':'Leader updated!','success');
+  };
+  document.getElementById('addLeaderBtn').onclick=function(){openLeaderModal(-1);};
+  window.deleteLeader=function(i){
+    if(!confirm('Delete "'+leaders[i].name+'"?\nThis removes them from the website.')){ return; }
+    leaders.splice(i,1); window.renderLeaders();
+    showToast('Leader removed.','info');
+  };
+  window.renderLeaders();
+})();
+</script>
+
+<script>
+// TESTIMONIALS
+(function(){
+  var defTestis=[
+    {name:'Ramesh Kumar',label:'Parent – Class VIII',rating:5,text:'"Rishikul Public School has been a wonderful choice for my children. The teachers are dedicated and the overall development of my child has been remarkable."',photo:''},
+    {name:'Sunita Devi',label:'Parent – Class V',rating:5,text:'"The school provides excellent academic as well as co-curricular activities. My daughter has grown in confidence and character."',photo:''},
+    {name:'Ajay Singh',label:'Parent – Class X',rating:5,text:'"I am impressed with the school\'s modern teaching methods and caring faculty. I highly recommend Rishikul Public School to every parent."',photo:''}
+  ];
+  var testis=JSON.parse(localStorage.getItem('rps_testimonials')||'null')||defTestis;
+  var curTestiPhoto='', selRating=5;
+
+  function saveTestis(){
+    localStorage.setItem('rps_testimonials',JSON.stringify(testis));
+    document.getElementById('infoTestiCount').textContent=testis.length+' review'+(testis.length!==1?'s':'');
+  }
+  function stars(n){var s='';for(var i=1;i<=5;i++)s+='<i class="fas fa-star" style="color:'+(i<=n?'#f59e0b':'#d1d5db')+';font-size:.78rem;"></i>';return s;}
+  function renderTestis(){
+    var el=document.getElementById('testiEditor');
+    if(!testis.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:2rem;">No testimonials yet.</p>';saveTestis();return;}
+    el.innerHTML=testis.map(function(t,i){
+      var ph=t.photo?'<img src="'+t.photo+'" style="width:52px;height:52px;object-fit:cover;border-radius:50%;border:2px solid var(--border);flex-shrink:0;"/>'
+        :'<div style="width:52px;height:52px;border-radius:50%;background:var(--bg);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);flex-shrink:0;"><i class="fas fa-user" style="font-size:1.2rem;"></i></div>';
+      return '<div class="leader-edit-row">'+ph
+        +'<div class="le-info" style="flex:1;"><strong>'+(t.name||'')+'</strong><span>'+(t.label||'')+'</span><div>'+stars(t.rating||5)+'</div>'
+        +'<span style="font-size:.75rem;color:var(--muted);font-style:italic;">'+(t.text||'').substring(0,80)+'&hellip;</span></div>'
+        +'<div class="le-actions"><button class="btn btn-outline btn-sm" onclick="openTestiModal('+i+')"><i class="fas fa-edit"></i> Edit</button>'
+        +'<button class="btn btn-red btn-sm" onclick="deleteTesti('+i+')"><i class="fas fa-trash"></i></button></div></div>';
+    }).join('');
+    saveTestis();
+  }
+  function updateStars(n){
+    document.querySelectorAll('#starRating .fa-star').forEach(function(s){s.style.color=parseInt(s.dataset.v)<=n?'#f59e0b':'#d1d5db';});
+  }
+  document.querySelectorAll('#starRating .fa-star').forEach(function(star){
+    star.addEventListener('click',function(){selRating=parseInt(this.dataset.v);document.getElementById('testiRating').value=selRating;updateStars(selRating);});
+  });
+  window.openTestiModal=function(idx){
+    var isNew=(idx===-1);
+    document.getElementById('testiModalTitle').innerHTML='<i class="fas fa-comment-alt"></i> '+(isNew?'Add':'Edit')+' Testimonial';
+    document.getElementById('testiEditIndex').value=idx;
+    curTestiPhoto='';
+    var th=document.getElementById('testiPhotoThumb');th.innerHTML='<i class="fas fa-user"></i>';
+    document.getElementById('testiPhotoFile').value='';
+    document.getElementById('testiNameInput').value=isNew?'':(testis[idx].name||'');
+    document.getElementById('testiLabelInput').value=isNew?'':(testis[idx].label||'');
+    document.getElementById('testiTextInput').value=isNew?'':(testis[idx].text||'');
+    selRating=isNew?5:(testis[idx].rating||5);
+    document.getElementById('testiRating').value=selRating;updateStars(selRating);
+    if(!isNew&&testis[idx].photo){curTestiPhoto=testis[idx].photo;th.innerHTML='';var img=document.createElement('img');img.src=curTestiPhoto;img.style='width:100%;height:100%;object-fit:cover;border-radius:50%;';th.appendChild(img);}
+    document.getElementById('testiModal').style.display='flex';
+  };
+  window.closeTestiModal=function(){document.getElementById('testiModal').style.display='none';};
+  document.getElementById('testiPhotoFile').addEventListener('change',function(){
+    var f=this.files[0];if(!f)return;
+    if(f.size>2097152){showToast('Max 2MB.','error');return;}
+    var r=new FileReader();r.onload=function(e){curTestiPhoto=e.target.result;var th=document.getElementById('testiPhotoThumb');th.innerHTML='';var img=document.createElement('img');img.src=curTestiPhoto;img.style='width:100%;height:100%;object-fit:cover;border-radius:50%;';th.appendChild(img);};r.readAsDataURL(f);
+  });
+  document.getElementById('saveTestiBtn').onclick=function(){
+    var idx=parseInt(document.getElementById('testiEditIndex').value);
+    var name=document.getElementById('testiNameInput').value.trim();
+    var text=document.getElementById('testiTextInput').value.trim();
+    if(!name||!text){showToast('Name and text required.','error');return;}
+    var obj={name:name,label:document.getElementById('testiLabelInput').value.trim(),rating:selRating,text:text,photo:curTestiPhoto};
+    if(idx===-1)testis.push(obj);else testis[idx]=obj;
+    renderTestis();closeTestiModal();showToast(idx===-1?'Testimonial added!':'Testimonial updated!','success');
+  };
+  document.getElementById('addTestiBtn').onclick=function(){openTestiModal(-1);};
+  window.deleteTesti=function(i){if(!confirm('Delete this testimonial?'))return;testis.splice(i,1);renderTestis();showToast('Removed.','info');};
+  renderTestis();
+})();
+</script>
+
+<script>
+// GALLERY
+(function(){
+  var images = JSON.parse(localStorage.getItem('rps_gallery_images') || '[]');
+
+  function saveGallery(){
+    try {
+      localStorage.setItem('rps_gallery_images', JSON.stringify(images));
+      return { ok: true };
+    } catch (err) {
+      console.error('Failed to save gallery images — possible storage quota issue.', err);
+      return { ok: false, error: err };
+    }
+  }
+
+  function showStatus(msg){
+    var statusBar = document.getElementById('galleryStatus');
+    var statusText = document.getElementById('galleryStatusText');
+    if(!statusBar) return;
+    if(statusText) statusText.textContent = msg;
+    statusBar.style.display = 'block';
+    setTimeout(function(){ statusBar.style.display = 'none'; }, 3000);
+  }
+
+  function renderGallery(){
+    var grid = document.getElementById('galleryManageGrid');
+    if(!grid) return;
+    var dashCount = document.getElementById('dashImgCount');
+    if(dashCount) dashCount.textContent = images.length;
+    var infoCount = document.getElementById('infoImgCount');
+    if(infoCount) infoCount.textContent = images.length + ' image' + (images.length !== 1 ? 's' : '');
+    if(!images.length){
+      grid.innerHTML = '<div class="empty-gallery"><i class="fas fa-images"></i><p>No images uploaded yet.</p></div>';
+      return;
+    }
+    grid.innerHTML = images.map(function(img, i){
+      return '<div class="gm-item"><img src="'+img.data+'" alt="'+img.name+'" loading="lazy"/>'
+        + '<div class="gm-overlay"></div>'
+        + '<div class="gm-label">'+img.name+'</div>'
+        + '<button class="gm-del" onclick="deleteGalleryImg('+i+')"><i class="fas fa-times"></i></button>'
+        + '<input type="checkbox" class="gm-check" data-idx="'+i+'"/></div>';
+    }).join('');
+  }
+
+  function processFiles(files){
+    var arr = Array.from(files).filter(function(file){ return file.type && file.type.startsWith('image/'); });
+    if(!arr.length){ showToast('No valid image files.','error'); return; }
+
+    var done = 0, added = 0;
+    var quotaFails = [], oversized = [], readFails = [];
+
+    function finalize(){
+      if(done !== arr.length) return;
+      renderGallery();
+      if(added > 0){
+        var successMsg = added + ' image' + (added > 1 ? 's' : '') + ' saved & published to website!';
+        showStatus(successMsg);
+        showToast(successMsg, 'success');
+      }
+      if(oversized.length){
+        showToast(oversized.length + ' file' + (oversized.length > 1 ? 's' : '') + ' skipped (over 5MB): ' + oversized.join(', '), 'error');
+      }
+      if(quotaFails.length || readFails.length){
+        var parts = [];
+        if(quotaFails.length){
+          parts.push('Storage limit reached for ' + quotaFails.join(', ') + '. Delete older images or use smaller files and try again.');
+        }
+        if(readFails.length){
+          parts.push('Could not read ' + readFails.join(', ') + '. Please try again.');
+        }
+        showToast(parts.join(' '), 'error');
+      }
+    }
+
+    arr.forEach(function(file){
+      if(file.size > 5 * 1024 * 1024){
+        oversized.push(file.name);
+        done++;
+        finalize();
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(e){
+        images.push({ data: e.target.result, name: file.name });
+        var result = saveGallery();
+        if(result.ok){
+          added++;
+        } else {
+          images.pop();
+          quotaFails.push(file.name);
+        }
+        done++;
+        finalize();
+      };
+      reader.onerror = function(){
+        readFails.push(file.name);
+        done++;
+        finalize();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  var dropZone = document.getElementById('galleryDropZone');
+  if(dropZone){
+    dropZone.addEventListener('dragover', function(e){ e.preventDefault(); this.classList.add('drag'); });
+    dropZone.addEventListener('dragleave', function(){ this.classList.remove('drag'); });
+    dropZone.addEventListener('drop', function(e){
+      e.preventDefault();
+      this.classList.remove('drag');
+      processFiles(e.dataTransfer.files);
+    });
+  }
+
+  var fileInput = document.getElementById('galleryFileInput');
+  if(fileInput){
+    fileInput.addEventListener('change', function(){
+      processFiles(this.files);
+      this.value = '';
+    });
+  }
+
+  var selectAllBtn = document.getElementById('selectAllBtn');
+  if(selectAllBtn){
+    selectAllBtn.onclick = function(){
+      var checks = document.querySelectorAll('.gm-check');
+      var allSelected = Array.from(checks).every(function(c){ return c.checked; });
+      checks.forEach(function(c){ c.checked = !allSelected; });
+    };
+  }
+
+  var bulkDelBtn = document.getElementById('bulkDelBtn');
+  if(bulkDelBtn){
+    bulkDelBtn.onclick = function(){
+      var sel = Array.from(document.querySelectorAll('.gm-check:checked')).map(function(c){ return parseInt(c.dataset.idx, 10); });
+      if(!sel.length){ showToast('No images selected.','error'); return; }
+      if(!confirm('Delete ' + sel.length + ' image(s)?')) return;
+      images = images.filter(function(_, i){ return !sel.includes(i); });
+      saveGallery();
+      renderGallery();
+      showStatus('Gallery updated & published.');
+      showToast(sel.length + ' image(s) deleted.', 'info');
+    };
+  }
+
+  window.deleteGalleryImg = function(i){
+    images.splice(i, 1);
+    saveGallery();
+    renderGallery();
+    showToast('Image removed.', 'info');
+  };
+
+  renderGallery();
+  if(images.length){
+    showStatus(images.length + ' image' + (images.length !== 1 ? 's' : '') + ' currently published.');
+  }
+})();
+</script>
+
+<script>
+// NOTICES
+(function(){
+  var defNotices=['Admissions Open for Session 2025–26 – Enroll Now!','Annual Sports Day – September 15, 2025','PTM Scheduled for August 30, 2025','Independence Day Celebration – A Grand Success!'];
+  var notices=JSON.parse(localStorage.getItem('rps_notices')||'null')||defNotices;
+  function saveNotices(){localStorage.setItem('rps_notices',JSON.stringify(notices));document.getElementById('dashNoticeCount').textContent=notices.length;document.getElementById('infoNotices').textContent=notices.length+' notice'+(notices.length!==1?'s':'');}
+  function renderNotices(){
+    var el=document.getElementById('noticesList');
+    if(!notices.length){el.innerHTML='<p style="color:var(--muted);font-size:.84rem;text-align:center;padding:1rem;">No notices yet.</p>';saveNotices();return;}
+    el.innerHTML=notices.map(function(n,i){
+      return '<div class="notice-row"><span class="notice-row-text">'+n+'</span>'
+        +'<button class="notice-row-del" onclick="deleteNotice('+i+')" title="Remove"><i class="fas fa-times"></i></button></div>';
+    }).join('');
+    saveNotices();
+  }
+  window.deleteNotice=function(i){notices.splice(i,1);renderNotices();showToast('Notice removed.','success');};
+  document.getElementById('addNoticeBtn').onclick=function(){
+    var v=document.getElementById('noticeInput').value.trim();
+    if(!v){showToast('Enter notice text.','error');return;}
+    notices.push(v);renderNotices();document.getElementById('noticeInput').value='';showToast('Notice added!','success');
+  };
+  document.getElementById('noticeInput').addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('addNoticeBtn').click();});
+  document.getElementById('clearAllNotices').onclick=function(){if(!notices.length)return;if(!confirm('Clear all '+notices.length+' notice(s)?'))return;notices=[];renderNotices();showToast('All cleared.','info');};
+  renderNotices();
+})();
+</script>
+
+<script>
+// PASSWORD
+(function(){
+  document.getElementById('newPw').addEventListener('input',function(){
+    var v=this.value,bar=document.getElementById('pwBar'),hint=document.getElementById('pwHint');
+    var s=0;if(v.length>=6)s++;if(v.length>=10)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+    var c=['#dc2626','#f97316','#eab308','#16a34a','#16a34a'];
+    var lb=['Too short','Weak','Fair','Strong','Very strong'];
+    bar.style.width=(Math.max(1,s)/5*100)+'%';bar.style.background=c[Math.max(0,s-1)];
+    hint.textContent=v.length?lb[Math.max(0,s-1)]:'Enter at least 6 characters';
+  });
+  document.getElementById('changePwBtn').onclick=function(){
+    var cur=document.getElementById('curPw').value;
+    var nw=document.getElementById('newPw').value;
+    var con=document.getElementById('conPw').value;
+    var un=document.getElementById('newUn').value.trim();
+    var curP=localStorage.getItem('rps_admin_pass')||'rps@2025';
+    if(!cur){showToast('Enter current password.','error');return;}
+    if(cur!==curP){showToast('Current password incorrect.','error');return;}
+    if(nw.length<6){showToast('New password must be 6+ characters.','error');return;}
+    if(nw!==con){showToast('Passwords do not match.','error');return;}
+    localStorage.setItem('rps_admin_pass',nw);
+    if(un){localStorage.setItem('rps_admin_user',un);document.getElementById('sbUsername').textContent=un;}
+    ['curPw','newPw','conPw','newUn'].forEach(function(id){document.getElementById(id).value='';});
+    document.getElementById('pwBar').style.width='0';
+    showToast('Credentials updated!','success');
+  };
+})();
+
+// DASHBOARD INIT
+(function(){
+  var yr=localStorage.getItem('rps_admission_year')||'2025–26';
+  document.getElementById('dashYear').textContent=yr;
+  document.getElementById('infoYear').textContent=yr;
+  var bn=JSON.parse(localStorage.getItem('rps_branding')||'{}');
+  if(bn.schoolName){
+    document.getElementById('infoName').textContent=bn.schoolName;
+    document.getElementById('sbSchoolName').textContent=bn.schoolName;
+  }
+  var lg=localStorage.getItem('rps_logo');
+  if(lg){
+    var sbIcon=document.getElementById('sbLogoIcon');if(sbIcon)sbIcon.style.display='none';
+    var sbImg=document.getElementById('sbLogoImg');if(sbImg){sbImg.src=lg;sbImg.style.display='block';}
+  }
+  var ld=JSON.parse(localStorage.getItem('rps_leaders')||'null');
+  if(ld){document.getElementById('dashLeaderCount').textContent=ld.length;document.getElementById('infoLeaders').textContent=ld.length+' members';}
+  var ts=JSON.parse(localStorage.getItem('rps_testimonials')||'null');
+  if(ts){document.getElementById('infoTestiCount').textContent=ts.length+' reviews';}
+  var gi=JSON.parse(localStorage.getItem('rps_gallery_images')||'[]');
+  document.getElementById('dashImgCount').textContent=gi.length;
+  document.getElementById('infoImgCount').textContent=gi.length+' images';
+  var ni=JSON.parse(localStorage.getItem('rps_notices')||'null');
+  if(ni){document.getElementById('dashNoticeCount').textContent=ni.length;document.getElementById('infoNotices').textContent=ni.length+' notices';}
+})();
+</script>
+
+<script>
+// MEDIA MANAGER
+(function(){
+
+  // ── Media sub-tabs ──────────────────────────────────────
+  document.querySelectorAll('.media-tab').forEach(function(tab){
+    tab.addEventListener('click', function(){
+      document.querySelectorAll('.media-tab').forEach(function(t){ t.classList.remove('active'); });
+      document.querySelectorAll('.media-tab-panel').forEach(function(p){ p.style.display='none'; p.classList.remove('active'); });
+      this.classList.add('active');
+      var panel = document.getElementById('mtab-' + this.dataset.mtab);
+      if(panel){ panel.style.display='block'; panel.classList.add('active'); }
+    });
+  });
+
+  // ── Helper: YouTube URL to embed URL ────────────────────
+  function toEmbedUrl(url){
+    if(!url) return '';
+    url = url.trim();
+    var id = '', m;
+    m = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if(m) id = m[1];
+    if(!id){ m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/); if(m) id = m[1]; }
+    if(!id){ m = url.match(/embed\/([a-zA-Z0-9_-]{11})/); if(m) id = m[1]; }
+    if(!id){ m = url.match(/shorts\/([a-zA-Z0-9_-]{11})/); if(m) id = m[1]; }
+    return id ? 'https://www.youtube.com/embed/' + id : '';
+  }
+
+  // ── Campus Video ─────────────────────────────────────────
+  var savedVideo = JSON.parse(localStorage.getItem('rps_campus_video') || 'null') || {};
+  var urlInput   = document.getElementById('campusVideoUrl');
+  var titleInput = document.getElementById('campusVideoTitle');
+  var frame      = document.getElementById('videoPreviewFrame');
+  var wrapShow   = document.getElementById('videoPreviewWrap');
+  var wrapEmpty  = document.getElementById('videoPreviewEmpty');
+
+  function applyVideoUI(embedUrl){
+    if(embedUrl){ frame.src=embedUrl; wrapShow.style.display='block'; wrapEmpty.style.display='none'; }
+    else { frame.src=''; wrapShow.style.display='none'; wrapEmpty.style.display='block'; }
+  }
+  if(savedVideo.url){ urlInput.value = savedVideo.url; }
+  if(savedVideo.title){ titleInput.value = savedVideo.title; }
+  applyVideoUI(toEmbedUrl(savedVideo.url || ''));
+
+  document.getElementById('previewVideoBtn').onclick = function(){
+    var embed = toEmbedUrl(urlInput.value);
+    if(!embed){ showToast('Enter a valid YouTube URL first.','error'); return; }
+    applyVideoUI(embed);
+  };
+  document.getElementById('saveVideoBtn').onclick = function(){
+    var raw = urlInput.value.trim();
+    if(!raw){ showToast('Please enter a YouTube URL.','error'); return; }
+    var embed = toEmbedUrl(raw);
+    if(!embed){ showToast('Could not recognise YouTube URL. Please check and try again.','error'); return; }
+    localStorage.setItem('rps_campus_video', JSON.stringify({ url: raw, title: titleInput.value.trim() }));
+    applyVideoUI(embed);
+    showToast('Campus video saved!','success');
+  };
+  document.getElementById('removeVideoBtn').onclick = function(){
+    if(!confirm('Remove the campus video?')) return;
+    localStorage.removeItem('rps_campus_video');
+    urlInput.value = ''; titleInput.value = '';
+    applyVideoUI('');
+    showToast('Video removed.','info');
+  };
+
+  // ── Generic image-upload manager factory ─────────────────
+  function makeImageManager(opts){
+    var images = JSON.parse(localStorage.getItem(opts.key) || '[]');
+    function save(){ localStorage.setItem(opts.key, JSON.stringify(images)); }
+    function showStatus(msg){
+      if(!opts.statusId) return;
+      var bar = document.getElementById(opts.statusId);
+      var txt = document.getElementById(opts.statusTextId);
+      if(!bar) return;
+      if(txt) txt.textContent = msg;
+      bar.style.display = 'block';
+    }
+    function render(){
+      var grid = document.getElementById(opts.gridId);
+      if(!images.length){
+        grid.innerHTML = '<div class="empty-gallery"><i class="fas '+opts.emptyIcon+'"></i><p>'+opts.emptyLabel+'</p></div>';
+        if(opts.statusId){ var bar=document.getElementById(opts.statusId); if(bar) bar.style.display='none'; }
+        return;
+      }
+      grid.innerHTML = images.map(function(img,i){
+        return '<div class="gm-item">'
+          +'<img src="'+img.data+'" alt="'+img.name+'" loading="lazy"/>'
+          +'<div class="gm-overlay"></div>'
+          +'<div class="gm-label">'+img.name+'</div>'
+          +'<button class="gm-del" onclick="'+opts.delFn+'('+i+')"><i class="fas fa-times"></i></button>'
+          +'<input type="checkbox" class="'+opts.chkClass+'" data-idx="'+i+'"/>'
+          +'</div>';
+      }).join('');
+    }
+    function processFiles(files){
+      var arr=Array.from(files).filter(function(f){return f.type.startsWith('image/');});
+      if(!arr.length){showToast('No valid image files selected.','error');return;}
+      var done=0, added=0;
+      arr.forEach(function(file){
+        if(file.size>5*1024*1024){
+          showToast(file.name+' exceeds 5MB limit — skipped.','error');
+          done++;
+          if(done===arr.length && added>0){ save(); render(); showStatus(added+' image'+(added>1?'s':'')+' saved & published to website!'); showToast(added+' image'+(added>1?'s':'')+' uploaded & saved!','success'); document.getElementById(opts.gridId).scrollIntoView({behavior:'smooth',block:'nearest'}); }
+          return;
+        }
+        var r=new FileReader();
+        r.onload=function(e){
+          images.push({data:e.target.result, name:file.name});
+          added++; done++;
+          if(done===arr.length){
+            save(); render();
+            showStatus(added+' image'+(added>1?'s':'')+' saved & published to website!');
+            showToast(added+' image'+(added>1?'s':'')+' uploaded & saved!','success');
+            document.getElementById(opts.gridId).scrollIntoView({behavior:'smooth',block:'nearest'});
+          }
+        };
+        r.readAsDataURL(file);
+      });
+    }
+    var dz=document.getElementById(opts.dropZoneId);
+    var fi=document.getElementById(opts.fileInputId);
+    dz.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('drag');});
+    dz.addEventListener('dragleave',function(){this.classList.remove('drag');});
+    dz.addEventListener('drop',function(e){e.preventDefault();this.classList.remove('drag');processFiles(e.dataTransfer.files);});
+    // <label for="..."> handles clicks natively — no JS click handler needed
+    fi.addEventListener('change',function(){processFiles(this.files);this.value='';});
+    document.getElementById(opts.selectAllId).onclick=function(){
+      var checks=document.querySelectorAll('.'+opts.chkClass);
+      var all=Array.from(checks).every(function(c){return c.checked;});
+      checks.forEach(function(c){c.checked=!all;});
+    };
+    document.getElementById(opts.bulkDelId).onclick=function(){
+      var sel=Array.from(document.querySelectorAll('.'+opts.chkClass+':checked')).map(function(c){return parseInt(c.dataset.idx);});
+      if(!sel.length){showToast('No images selected.','error');return;}
+      if(!confirm('Delete '+sel.length+' image(s)?'))return;
+      images=images.filter(function(_,i){return !sel.includes(i);});
+      save(); render();
+      showStatus(images.length+' image'+(images.length!==1?'s':'')+' remaining & published.');
+      showToast(sel.length+' image(s) deleted.','info');
+    };
+    window[opts.delFn]=function(i){
+      images.splice(i,1); save(); render();
+      if(images.length) showStatus(images.length+' image'+(images.length!==1?'s':'')+' remaining & published.');
+      showToast('Image removed.','info');
+    };
+    render();
+    if(images.length) showStatus(images.length+' image'+(images.length!==1?'s':'')+' currently published.');
+  }
+
+  // Award Winning Images
+  makeImageManager({
+    key:'rps_award_images', dropZoneId:'awardDropZone', fileInputId:'awardFileInput',
+    gridId:'awardManageGrid', selectAllId:'awardSelectAllBtn', bulkDelId:'awardBulkDelBtn',
+    emptyIcon:'fa-trophy', emptyLabel:'No award images uploaded yet.',
+    chkClass:'award-gm-check', delFn:'deleteAwardImg',
+    statusId:'awardStatus', statusTextId:'awardStatusText'
+  });
+
+  // Smart Classes Images
+  makeImageManager({
+    key:'rps_smart_images', dropZoneId:'smartDropZone', fileInputId:'smartFileInput',
+    gridId:'smartManageGrid', selectAllId:'smartSelectAllBtn', bulkDelId:'smartBulkDelBtn',
+    emptyIcon:'fa-chalkboard-teacher', emptyLabel:'No smart class images uploaded yet.',
+    chkClass:'smart-gm-check', delFn:'deleteSmartImg',
+    statusId:'smartStatus', statusTextId:'smartStatusText'
+  });
+
+})();
+</script>
+
+
+
+</body>
+</html>
+

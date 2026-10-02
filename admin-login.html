@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login – Rishikul Public School</title>
+  <!-- Redirect immediately before anything renders — prevents login page flash -->
+  <script>
+    if (localStorage.getItem('rps_logged_in') === 'true') {
+      window.location.replace('admin.html');
+    }
+  </script>
+  <style>html,body{background:#0f2340;}</style>
+  <link rel="stylesheet" href="css/poppins.css"/>
+  <link rel="stylesheet" href="css/fa.min.css"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Poppins',sans-serif;min-height:100vh;background:linear-gradient(135deg,#0f2340,#1a3c6e,#0f2340);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow:hidden;position:relative;}
+    body::before{content:'';position:absolute;width:600px;height:600px;background:#f5a623;border-radius:50%;top:-250px;right:-200px;opacity:.07;}
+    body::after{content:'';position:absolute;width:450px;height:450px;background:#fff;border-radius:50%;bottom:-200px;left:-150px;opacity:.05;}
+    .card{background:#fff;border-radius:22px;width:100%;max-width:420px;padding:2.75rem 2.25rem;box-shadow:0 30px 80px rgba(0,0,0,.4);position:relative;z-index:2;}
+    .hd{text-align:center;margin-bottom:2rem;}
+    .logo{width:68px;height:68px;background:linear-gradient(135deg,#1a3c6e,#2d5a9e);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.9rem;color:#f5a623;margin:0 auto 1rem;box-shadow:0 8px 24px rgba(26,60,110,.3);}
+    .hd h1{font-size:1.45rem;color:#1a3c6e;font-weight:700;margin-bottom:.25rem;}
+    .hd p{font-size:.8rem;color:#718096;}
+    .fg{margin-bottom:1.1rem;}
+    .fg label{display:block;font-size:.8rem;font-weight:600;color:#2d3748;margin-bottom:.45rem;}
+    .iw{position:relative;}
+    .iw .ic{position:absolute;left:.9rem;top:50%;transform:translateY(-50%);color:#a0aec0;font-size:.9rem;}
+    .iw input{width:100%;padding:.75rem 2.6rem .75rem 2.5rem;border:1.5px solid #e2e8f0;border-radius:9px;font-family:'Poppins',sans-serif;font-size:.88rem;color:#2d3748;outline:none;background:#f8fafc;transition:all .25s;}
+    .iw input:focus{border-color:#1a3c6e;background:#fff;box-shadow:0 0 0 3px rgba(26,60,110,.1);}
+    .tpw{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#a0aec0;cursor:pointer;padding:0;font-size:.9rem;}
+    .tpw:hover{color:#1a3c6e;}
+    .err{background:#fff5f5;border:1px solid #fed7d7;color:#e53e3e;padding:.6rem .9rem;border-radius:8px;font-size:.8rem;margin-bottom:1rem;display:none;align-items:center;gap:.45rem;}
+    .err.show{display:flex;}
+    .lbtn{width:100%;padding:.85rem;background:linear-gradient(135deg,#1a3c6e,#2d5a9e);color:#fff;border:none;border-radius:9px;font-family:'Poppins',sans-serif;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:.55rem;}
+    .lbtn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(26,60,110,.4);}
+    .lbtn:disabled{opacity:.65;cursor:not-allowed;transform:none;}
+    .bk{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:1.5rem;font-size:.81rem;color:#a0aec0;text-decoration:none;transition:color .2s;}
+    .bk:hover{color:#1a3c6e;}
+    .ft{text-align:center;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #e2e8f0;font-size:.73rem;color:#a0aec0;line-height:1.6;}
+    .hint-box{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#92400e;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%,75%{transform:translateX(-7px)}50%{transform:translateX(7px)}}
+    .shake{animation:shake .35s ease;}
+  </style>
+</head>
+<body>
+  <!-- Cover used to blank the screen before navigating to admin — prevents flicker — no transition so it goes opaque instantly -->
+  <div id="loginCover" style="position:fixed;inset:0;background:#f1f5f9;opacity:0;z-index:99999;pointer-events:none;"></div>
+  <div class="card" id="card">
+    <div class="hd">
+      <div class="logo"><i class="fas fa-graduation-cap"></i></div>
+      <h1>Admin Panel</h1>
+      <p>Rishikul Public School – Secure Access</p>
+    </div>
+    <div class="hint-box"><i class="fas fa-info-circle"></i>Default: <strong>admin</strong> / <strong>rps@2025</strong></div>
+    <div class="err" id="err"><i class="fas fa-exclamation-circle"></i><span id="errTxt">Invalid credentials.</span></div>
+    <form id="frm" novalidate>
+      <div class="fg">
+        <label>Username</label>
+        <div class="iw"><i class="fas fa-user ic"></i><input type="text" id="un" placeholder="Admin username" autocomplete="username"/></div>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <div class="iw">
+          <i class="fas fa-lock ic"></i>
+          <input type="password" id="pw" placeholder="Password" autocomplete="current-password"/>
+          <button type="button" class="tpw" id="tpw"><i class="fas fa-eye" id="pwi"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="lbtn" id="lbtn"><i class="fas fa-sign-in-alt"></i> Login to Admin Panel</button>
+    </form>
+    <a href="index.html" class="bk"><i class="fas fa-arrow-left"></i> Back to Website</a>
+    <div class="ft"><strong style="color:#2d3748;">Rishikul Public School</strong><br/>Maniyarepur, Chandwak, Jaunpur – 222129</div>
+  </div>
+  <script>
+    var AU=localStorage.getItem('rps_admin_user')||'admin';
+    var AP=localStorage.getItem('rps_admin_pass')||'rps@2025';
+    document.getElementById('tpw').onclick=function(){
+      var i=document.getElementById('pw'),ic=document.getElementById('pwi');
+      if(i.type==='password'){i.type='text';ic.className='fas fa-eye-slash';}
+      else{i.type='password';ic.className='fas fa-eye';}
+    };
+    document.getElementById('frm').addEventListener('submit',function(e){
+      e.preventDefault();
+      var u=document.getElementById('un').value.trim();
+      var p=document.getElementById('pw').value;
+      var btn=document.getElementById('lbtn');
+      if(!u||!p){ showE('Please enter username and password.'); return; }
+      if(u===AU && p===AP){
+        localStorage.setItem('rps_logged_in','true');
+        btn.innerHTML='<i class="fas fa-check"></i> Logging in...';
+        btn.disabled = true;
+        // Paint an instant opaque cover, then navigate on the very next frame — zero flicker
+        var cover = document.getElementById('loginCover');
+        cover.style.transition = 'none';
+        cover.style.opacity = '1';
+        // Double rAF ensures the browser has committed the opaque paint before we navigate
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            window.location.replace('admin.html');
+          });
+        });
+      } else {
+        showE('Invalid username or password.');
+      }
+    });
+    function showE(m){
+      var errEl=document.getElementById('err');
+      var errTxt=document.getElementById('errTxt');
+      var card=document.getElementById('card');
+      if(errTxt) errTxt.textContent=m;
+      if(errEl) errEl.classList.add('show');
+      if(card){ card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake'); }
+    }
+  </script>
+</body>
+</html>
